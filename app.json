@@ -6,9 +6,24 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "scheme": "karunyaone",
-    "android": { "package": "com.karunyaone.app" },
-    "ios": { "bundleIdentifier": "com.karunyaone.app" },
-    "plugins": ["expo-router"],
-    "experiments": { "typedRoutes": true }
+    "android": {
+      "package": "com.karunyaone.app"
+    },
+    "ios": {
+      "bundleIdentifier": "com.karunyaone.app"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4a250737-064d-422c-98bc-8d94681b0a1e"
+      }
+    },
+    "owner": "darkkkk"
   }
 }
