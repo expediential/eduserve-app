@@ -1,0 +1,10 @@
+node_modules/
+.tools/
+.expo/
+dist/
+*.log
+.env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/

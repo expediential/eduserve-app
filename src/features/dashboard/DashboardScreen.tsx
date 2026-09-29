@@ -1,0 +1,24 @@
+import React from 'react';
+import { router } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { attendancePercentage, assessmentPercentage } from '@/src/domain/academic';
+import { Card, ListRow, Screen, SectionTitle, styles } from '@/src/ui/components';
+import { useStudentData } from '@/src/ui/useStudentData';
+import { useTheme } from '@/src/ui/theme';
+export function DashboardScreen() {
+ const { data, error } = useStudentData(); const { colors } = useTheme();
+ if (error) return <Screen><Text style={{ color: colors.danger, padding: 30 }}>We couldn’t load your student snapshot. Pull to retry.</Text></Screen>;
+ if (!data) return <Screen><ActivityIndicator color={colors.accent} style={{ marginTop: 90 }} /></Screen>;
+ const overall = attendancePercentage(data.attendance.reduce((s,a)=>s+a.present,0), data.attendance.reduce((s,a)=>s+a.total,0)); const performance = assessmentPercentage(data.marks.flatMap(m=>m.assessments)); const next = data.timetable[0]; const course = data.courses.find(c=>c.id===next.courseId)!;
+ return <Screen><ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+   <View style={local.top}><View><Text style={{ color: colors.muted, fontSize: 14 }}>Good evening, James</Text><Text style={[local.term, { color: colors.text }]}>Semester {data.profile.semester} · CSE Cyber Security</Text></View><Pressable onPress={()=>router.push('/profile')} style={[local.avatar,{backgroundColor:colors.accentSoft}]}><Text style={{color:colors.accent,fontWeight:'900'}}>JM</Text></Pressable></View>
+   <Card style={[local.hero,{backgroundColor:colors.accent,borderColor:colors.accent}]}><Text style={local.heroLabel}>NEXT CLASS · TODAY</Text><Text style={local.heroTitle}>{course.name}</Text><Text style={local.heroBody}>{next.start} – {next.end} · {course.room}</Text><View style={local.heroFooter}><Text style={local.heroBody}>{course.faculty}</Text><Text style={local.live}>IN 42 MIN</Text></View></Card>
+   <View style={local.stats}><Metric label="ATTENDANCE" value={`${overall}%`} detail="Overall" onPress={()=>router.push('/attendance')} /><Metric label="PERFORMANCE" value={`${performance}%`} detail="Current average" onPress={()=>router.push('/marks')} /></View>
+   <SectionTitle title="Your day" action="Full schedule" onAction={()=>router.push('/(tabs)/schedule')} /><Card><ListRow title="Linear Algebra" detail="10:00 AM · CTC III · 204" trailing={<Text style={{color:colors.accent,fontWeight:'800'}}>NEXT</Text>} /><ListRow title="Programming in C" detail="11:00 AM · CSE Block · 112" /><ListRow title="Applied Physics" detail="2:00 PM · Science Block · 305" /></Card>
+   <SectionTitle title="Needs your attention" /><Card><ListRow title={`${data.assignments.length} assignments pending`} detail="The nearest is due tomorrow" onPress={()=>router.push('/academics')} /><ListRow title="Internal examinations" detail="Starts in 16 days" onPress={()=>router.push('/exams')} /></Card>
+   <SectionTitle title="Academic pulse" action="View insights" onAction={()=>router.push('/academics')} /><Card><Text style={{color:colors.text,fontSize:15,fontWeight:'800'}}>Physics attendance needs attention</Text><Text style={{color:colors.muted,lineHeight:20,marginTop:7}}>76.3% is 1.3 points above your configured 75% minimum. Attend the next classes to build a safer margin.</Text></Card>
+   <SectionTitle title="Latest notices" action="All notices" onAction={()=>router.push('/(tabs)/notices')} /><Card><ListRow title={data.notices[0].title} detail={data.notices[0].timestamp} /></Card>
+ </ScrollView></Screen>;
+}
+function Metric({label,value,detail,onPress}:{label:string;value:string;detail:string;onPress:()=>void}) { const {colors}=useTheme(); return <Pressable onPress={onPress} style={[local.metric,{backgroundColor:colors.surface,borderColor:colors.border}]}><Text style={{color:colors.muted,fontSize:10,fontWeight:'800',letterSpacing:.7}}>{label}</Text><Text style={{color:colors.text,fontSize:28,fontWeight:'900',marginTop:9}}>{value}</Text><Text style={{color:colors.muted,fontSize:12,marginTop:3}}>{detail}</Text></Pressable> }
+const local=StyleSheet.create({top:{paddingTop:19,paddingBottom:20,flexDirection:'row',justifyContent:'space-between',alignItems:'center'},term:{fontSize:16,fontWeight:'800',marginTop:4,letterSpacing:-.3},avatar:{width:42,height:42,borderRadius:21,alignItems:'center',justifyContent:'center'},hero:{padding:20},heroLabel:{color:'#DCE4FF',fontSize:10,fontWeight:'900',letterSpacing:1},heroTitle:{color:'#FFF',fontSize:24,fontWeight:'900',letterSpacing:-.5,marginTop:11},heroBody:{color:'#E5E9FF',fontSize:13,marginTop:5},heroFooter:{flexDirection:'row',justifyContent:'space-between',marginTop:19,alignItems:'flex-end'},live:{color:'#FFF',fontSize:10,fontWeight:'900',letterSpacing:.6},stats:{flexDirection:'row',gap:12,marginTop:12},metric:{flex:1,borderWidth:1,borderRadius:18,padding:15}});

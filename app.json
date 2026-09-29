@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Karunya One",
+    "slug": "karunya-one",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "scheme": "karunyaone",
+    "android": { "package": "com.karunyaone.app" },
+    "ios": { "bundleIdentifier": "com.karunyaone.app" },
+    "plugins": ["expo-router"],
+    "experiments": { "typedRoutes": true }
+  }
+}
