@@ -12,6 +12,12 @@
 - Typed mock provider, FastAPI API boundary, and test coverage for key calculations
 - Light/dark/system-aware design tokens and accessible native pressable controls
 
+## Sign-in status
+
+The application includes a **development-only demo sign-in** so the protected app flow can be exercised without collecting university credentials. It opens the fictional James Martin data already packaged with the application; an email and a password of four or more characters work locally and are not transmitted or retained.
+
+This is not EduServe sign-in. Real sign-in needs a university-authorized identity provider, backend session storage, server-side token handling, account recovery, rate limits, and a privacy review. The typed `/api/auth/login` contract exists as the integration boundary, but intentionally returns `501` until that authorization exists.
+
 ## Run the mobile app
 
 ```bash
@@ -21,6 +27,8 @@ npx expo start --android
 ```
 
 Use an Android emulator or Expo Go device for development. The Android application id is `com.karunyaone.app`; configure signing/EAS build profiles before release `.apk`/`.aab` builds.
+
+For APK installation, use Android 7.0 (API 24) or newer, remove an earlier copy of Karunya One if Android reports a signing conflict, and allow installation from the browser/files app that opened the download. The current build uses a stable EAS signing identity so newer builds can update earlier EAS builds.
 
 ## Run checks
 

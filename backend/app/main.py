@@ -1,11 +1,18 @@
 from fastapi import FastAPI, HTTPException
 from .provider import MockStudentDataProvider
+from .models import SignInRequest
 
 app = FastAPI(title="Karunya One API", version="0.1.0")
 provider = MockStudentDataProvider()
 
 @app.get('/health')
 async def health(): return {'status': 'ok', 'provider': 'mock'}
+
+@app.post('/api/auth/login', status_code=501)
+async def login(request: SignInRequest):
+    # Do not log request.password. This remains unavailable until an authorized
+    # university identity provider has been configured.
+    raise HTTPException(status_code=501, detail='Production sign-in is not configured. Use development mock mode locally.')
 @app.get('/api/student/profile')
 async def profile(): return await provider.get_profile()
 @app.get('/api/student/attendance')
