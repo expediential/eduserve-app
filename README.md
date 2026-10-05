@@ -8,7 +8,7 @@
 - Attendance analytics with transparent threshold, recovery, and permitted-absence calculations
 - Assessment history and target-mark calculator
 - Timetable, examinations, notices, fees, digital ID preview, and profile
-- An explainable, mock-data-grounded Karunya Assistant interface
+- An offline Academic Guide with explainable, deterministic answers from student data
 - Typed mock provider, FastAPI API boundary, and test coverage for key calculations
 - Light/dark/system-aware design tokens and accessible native pressable controls
 

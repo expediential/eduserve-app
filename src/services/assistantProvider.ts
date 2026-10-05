@@ -1,20 +1,38 @@
-import { attendancePercentage, classesCanMiss } from '@/src/domain/academic';
-import { StudentData } from '@/src/domain/types';
+import { assessmentPercentage, attendancePercentage, attendanceSignal, classesCanMiss, classesToReach, markNeeded } from '../domain/academic';
+import { Course, StudentData } from '../domain/types';
 
-export interface AIProvider { answer(question: string, data: StudentData): Promise<string>; }
+export type GuideAnswer = { title: string; answer: string; evidence: string; action?: string };
 
-/** Uses only supplied application data; safe default for local development. */
-export class MockAIProvider implements AIProvider {
-  async answer(question: string, data: StudentData) {
-    const lower = question.toLowerCase();
-    const math = data.attendance.find((item) => item.courseId === 'math')!;
-    if (lower.includes('attendance') || lower.includes('miss')) return `Linear Algebra attendance is ${attendancePercentage(math.present, math.total)}% (${math.present}/${math.total} classes). At a 75% configured threshold, you can miss ${classesCanMiss(math, 75)} more classes. This is a deterministic application calculation.`;
-    if (lower.includes('tomorrow') || lower.includes('class')) return 'Tomorrow starts with Programming in C lab at 9:00 AM, followed by Linear Algebra tutorial at 11:00 AM.';
-    if (lower.includes('exam')) return 'Your next exam is Linear Algebra Internal on October 15 at 9:30 AM in CTC III Hall 2, seat A-14.';
-    return `Your workload is moderate: ${data.assignments.filter((a) => a.status === 'pending').length} assignments are pending and ${data.exams.length} exams are scheduled. Physics attendance is 76.3%, just above the configured 75% threshold.`;
+/** Offline, deterministic academic help. It has no model or network access. */
+export class AcademicGuide {
+  answer(question: string, data: StudentData): GuideAnswer {
+    const input = question.toLowerCase().trim();
+    const course = this.resolveCourse(input, data.courses);
+    if (input.includes('attendance') || input.includes('miss') || input.includes('skip')) return this.attendance(data, course, input);
+    if (input.includes('mark') || input.includes('score') || input.includes('need') || input.includes('target')) return this.marks(data, course, input);
+    if (input.includes('exam')) return this.exams(data);
+    if (input.includes('assignment') || input.includes('due') || input.includes('deadline')) return this.assignments(data);
+    if (input.includes('notice') || input.includes('update')) return this.notices(data);
+    if (input.includes('tomorrow') || input.includes('class') || input.includes('schedule') || input.includes('timetable')) return this.schedule(data, input);
+    return this.summary(data);
   }
-}
 
-/** Production adapters are intentionally unavailable until configured server-side. */
-export class OpenAIProvider implements AIProvider { async answer(): Promise<string> { throw new Error('OpenAI provider is not configured. Keep API keys server-side.'); } }
-export class LocalProvider implements AIProvider { async answer(): Promise<string> { throw new Error('Local provider is not configured.'); } }
+  private resolveCourse(input: string, courses: Course[]) { return courses.find((course) => input.includes(course.name.toLowerCase()) || input.includes(course.code.toLowerCase()) || course.name.toLowerCase().split(' ').some((word) => word.length > 3 && input.includes(word))) ?? courses[0]; }
+  private attendance(data: StudentData, course: Course, input: string): GuideAnswer {
+    const record = data.attendance.find((item) => item.courseId === course.id)!; const percent = attendancePercentage(record.present, record.total); const signal = attendanceSignal(record, 75);
+    if (input.includes('reach') || input.includes('80')) { const needed = classesToReach(record, 80); return { title: `${course.name} attendance`, answer: needed === 0 ? `You are already at or above 80% with ${percent}%.` : `Attend the next ${needed} classes consecutively to reach 80%.`, evidence: `${record.present} attended out of ${record.total} classes · current attendance ${percent}% · target 80%.`, action: 'Open Attendance for the full subject breakdown.' }; }
+    if (input.includes('miss') || input.includes('skip')) return { title: `${course.name} attendance`, answer: `You can miss ${classesCanMiss(record, 75)} more classes before falling below the configured 75% threshold.`, evidence: `${record.present}/${record.total} classes attended · ${percent}% current attendance.`, action: signal.reason };
+    return { title: `${course.name} attendance`, answer: `${percent}% · ${signal.status.toLowerCase()}.`, evidence: `${record.present} attended of ${record.total} recorded classes. ${signal.reason}`, action: 'The threshold is configurable; it is not asserted as a university policy.' };
+  }
+  private marks(data: StudentData, course: Course, input: string): GuideAnswer {
+    const marks = data.marks.find((item) => item.courseId === course.id); if (!marks) return { title: `${course.name} marks`, answer: 'No recorded assessment data is available for this subject.', evidence: 'The development data provider has no marks entry for this course.' };
+    const earned = marks.assessments.reduce((total, item) => total + item.score, 0); const maximum = marks.assessments.reduce((total, item) => total + item.max, 0); const target = Number(input.match(/\b([5-9]\d|100)\s?%/)?.[1]);
+    if (target) { const needed = markNeeded(earned, maximum, 25, target); return { title: `${course.name} target`, answer: `For a ${target}% overall target, you need ${needed} / 25 on a future 25-mark assessment.`, evidence: `Recorded score: ${earned}/${maximum} (${assessmentPercentage(marks.assessments)}%). The calculation assumes one remaining 25-mark assessment.`, action: 'Change the target on the Marks screen for the interactive calculator.' }; }
+    return { title: `${course.name} performance`, answer: `${assessmentPercentage(marks.assessments)}% across recorded assessments.`, evidence: marks.assessments.map((item) => `${item.name} ${item.score}/${item.max}`).join(' · '), action: 'Ask “What do I need for 80% in Linear Algebra?” for a target calculation.' };
+  }
+  private schedule(data: StudentData, input: string): GuideAnswer { const day = input.includes('tomorrow') ? 2 : 1; const label = day === 2 ? 'Tomorrow' : 'Today'; const entries = data.timetable.filter((entry) => entry.day === day); if (!entries.length) return { title: `${label}'s schedule`, answer: `No ${label.toLowerCase()} classes are in the development schedule.`, evidence: 'No timetable entries matched the selected day.' }; return { title: `${label}'s schedule`, answer: entries.map((entry) => { const course = data.courses.find((item) => item.id === entry.courseId)!; return `${entry.start} ${course.name} (${course.room})`; }).join(' · '), evidence: `${entries.length} timetable entries from the current student snapshot.`, action: 'Open Schedule for room, faculty, and session type.' }; }
+  private exams(data: StudentData): GuideAnswer { const exam = data.exams[0]; const course = data.courses.find((item) => item.id === exam.courseId)!; return { title: 'Next examination', answer: `${course.name} · ${exam.type} · ${exam.date}, ${exam.time}.`, evidence: `Venue ${exam.venue} · seat ${exam.seat}.`, action: 'Verify against an authorized examination notice before relying on it.' }; }
+  private assignments(data: StudentData): GuideAnswer { const pending = data.assignments.filter((item) => item.status === 'pending'); return { title: 'Pending assignments', answer: pending.map((item) => `${item.title} — ${item.due}`).join(' · '), evidence: `${pending.length} assignments are marked pending in the current data.`, action: 'No submissions are made from this development build.' }; }
+  private notices(data: StudentData): GuideAnswer { const unread = data.notices.filter((item) => !item.read); return { title: 'Unread notices', answer: unread.map((item) => item.title).join(' · '), evidence: `${unread.length} unread notices in the application snapshot.`, action: 'Open Notices to read the full source text.' }; }
+  private summary(data: StudentData): GuideAnswer { const risk = data.attendance.map((record) => ({ record, course: data.courses.find((course) => course.id === record.courseId)! })).sort((a, b) => attendancePercentage(a.record.present, a.record.total) - attendancePercentage(b.record.present, b.record.total))[0]; const pending = data.assignments.filter((item) => item.status === 'pending').length; return { title: 'Academic snapshot', answer: `Workload is moderate: ${pending} assignments and ${data.exams.length} upcoming exams. Your closest attendance margin is ${risk.course.name} at ${attendancePercentage(risk.record.present, risk.record.total)}%.`, evidence: `The guide evaluated ${data.attendance.length} subjects, ${pending} pending assignments, and ${data.exams.length} exams.`, action: attendanceSignal(risk.record, 75).reason }; }
+}
