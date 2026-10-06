@@ -1,0 +1,7 @@
+import React, { useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput } from 'react-native';
+import { Badge, Card, ListRow, Screen, styles } from '@/src/ui/components';
+import { searchStudentData } from '@/src/services/unifiedSearch';
+import { useStudentData } from '@/src/ui/useStudentData';
+import { useTheme } from '@/src/ui/theme';
+export default function Search(){const{data}=useStudentData();const{colors}=useTheme();const[q,setQ]=useState('');const results=useMemo(()=>data?searchStudentData(data,q):[],[data,q]);return <Screen><ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"><Text style={[s.title,{color:colors.text}]}>Search</Text><Text style={{color:colors.muted}}>Courses, notices, exams and assignments.</Text><TextInput value={q} onChangeText={setQ} autoFocus placeholder="Search your student workspace" placeholderTextColor={colors.muted} style={[s.input,{color:colors.text,backgroundColor:colors.surface,borderColor:colors.border}]}/>{q&&!results.length&&<Text style={{color:colors.muted,textAlign:'center',marginTop:44}}>No app data matches “{q}”.</Text>}{results.map((item)=><Card key={item.id} style={{marginTop:11}}><Badge label={item.kind.toUpperCase()}/><ListRow title={item.title} detail={item.detail}/></Card>)}</ScrollView></Screen>};const s=StyleSheet.create({title:{fontSize:30,fontWeight:'900',letterSpacing:-.8,paddingTop:19},input:{height:52,borderWidth:1,borderRadius:14,paddingHorizontal:14,marginTop:21,fontSize:16}});
