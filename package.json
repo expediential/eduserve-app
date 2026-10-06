@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "caniuse-lite": "^1.0.30001814",
     "typescript": "~5.9.2",
     "vitest": "^3.2.4"
   }
