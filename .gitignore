@@ -3,6 +3,7 @@ node_modules/
 .expo/
 dist/
 dist-*/
+karunya-one-expo-app.zip
 *.log
 .env
 .env.*
