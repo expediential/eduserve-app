@@ -1,0 +1,11 @@
+import React from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Badge, Card, Screen, SectionTitle, styles } from '@/src/ui/components';
+import { ThemePreference, useTheme } from '@/src/ui/theme';
+
+const choices: ThemePreference[] = ['system', 'light', 'dark'];
+export default function Settings() {
+  const { colors, preference, setPreference } = useTheme();
+  return <Screen><ScrollView contentContainerStyle={styles.content}><Text style={[title, { color: colors.text }]}>Settings</Text><Text style={{ color: colors.muted }}>Personalize the app without changing student data.</Text><SectionTitle title="Appearance" /><Card><Text style={{ color: colors.text, fontWeight: '800' }}>Theme</Text><Text style={{ color: colors.muted, marginTop: 5 }}>Choose how Karunya One appears on this device.</Text><View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>{choices.map((choice) => <Pressable key={choice} accessibilityRole="button" accessibilityState={{ selected: preference === choice }} onPress={() => setPreference(choice)} style={{ minHeight: 42, paddingHorizontal: 13, justifyContent: 'center', borderRadius: 12, backgroundColor: preference === choice ? colors.accent : colors.elevated }}><Text style={{ color: preference === choice ? '#FFF' : colors.text, fontWeight: '800', textTransform: 'capitalize' }}>{choice}</Text></Pressable>)}</View></Card><SectionTitle title="Notifications" /><Card><View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 16 }}><View style={{ flex: 1 }}><Text style={{ color: colors.text, fontWeight: '800' }}>Notification delivery</Text><Text style={{ color: colors.muted, marginTop: 5, lineHeight: 19 }}>Push notifications are not configured in this development build.</Text></View><Badge label="NOT SET UP" /></View></Card><SectionTitle title="About" /><Card><Text style={{ color: colors.text, fontWeight: '800' }}>Karunya One</Text><Text style={{ color: colors.muted, marginTop: 5 }}>Version 0.1.0 · Demo mode</Text><Text style={{ color: colors.muted, marginTop: 10, lineHeight: 19 }}>An independent student companion. It uses fictional data and has no live EduServe or KIDS connection.</Text></Card></ScrollView></Screen>;
+}
+const title = { fontSize: 30, fontWeight: '900' as const, letterSpacing: -.8, paddingTop: 19 };

@@ -34,8 +34,18 @@ For APK installation, use Android 7.0 (API 24) or newer, remove an earlier copy 
 
 ```bash
 npm run typecheck
+npm run lint
 npm test
+npx expo export --platform android --output-dir dist
 ```
+
+The export command verifies the production Android JavaScript bundle. A distributable APK is created separately through the EAS `preview` profile:
+
+```bash
+npx eas-cli build --platform android --profile preview
+```
+
+The final cloud build page supplies the signed APK download. Do not rename it to `.aab`; an APK and an AAB are different Android formats.
 
 ## Optional backend
 
@@ -51,6 +61,8 @@ Set `EXPO_PUBLIC_API_BASE_URL` using `.env.example` when connecting the mobile s
 ## Data and integration boundary
 
 `src/domain/types.ts` defines `StudentDataProvider`; `src/data/mockStudentProvider.ts` is the active implementation. Future authorized EduServe work belongs behind this interface and `backend/app/provider.py`. Read [the integration policy](docs/eduserve-integration.md) before adding it.
+
+The app uses a single in-memory student snapshot for all screens, so Home, attendance, marks, timetable, calendar, search, and the deterministic Academic Guide always refer to the same fictional James Martin record. The visible “demo data” freshness label is deliberately not a live-sync claim.
 
 ## Limitations
 

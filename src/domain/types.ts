@@ -9,6 +9,7 @@ export interface TimetableEntry { id: string; courseId: string; day: number; sta
 export interface Exam { id: string; courseId: string; type: 'Internal' | 'End Semester' | 'Practical'; date: string; time: string; venue: string; seat: string; }
 export interface Notice { id: string; title: string; body: string; category: NoticeCategory; timestamp: string; priority: 'normal' | 'high'; read: boolean; pinned?: boolean; }
 export interface Assignment { id: string; courseId: string; title: string; due: string; status: 'pending' | 'submitted'; }
+export interface CampusEvent { id: string; title: string; date: string; time: string; venue: string; category: 'Academic' | 'Campus'; }
 export interface FeeSummary { payable: number; paid: number; dueDate: string; transactions: { id: string; label: string; amount: number; date: string }[]; }
-export interface StudentData { profile: Profile; courses: Course[]; attendance: Attendance[]; marks: Marks[]; timetable: TimetableEntry[]; exams: Exam[]; notices: Notice[]; assignments: Assignment[]; fees: FeeSummary; }
+export interface StudentData { profile: Profile; courses: Course[]; attendance: Attendance[]; marks: Marks[]; timetable: TimetableEntry[]; exams: Exam[]; notices: Notice[]; assignments: Assignment[]; events: CampusEvent[]; fees: FeeSummary; }
 export interface StudentDataProvider { getStudentData(): Promise<StudentData>; }

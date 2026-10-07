@@ -5,3 +5,7 @@ export function classesToReach(attendance: Attendance, target: number) { const p
 export function attendanceSignal(attendance: Attendance, threshold: number): { status: import('./types').AttendanceStatus; reason: string } { const percent = attendancePercentage(attendance.present, attendance.total); if (percent >= threshold + 5) return { status: 'SAFE', reason: `${percent}% is ${percent - threshold} points above your ${threshold}% target.` }; if (percent >= threshold) return { status: 'WATCH', reason: `${percent}% is only ${percent - threshold} points above your ${threshold}% target.` }; return { status: 'ATTENTION', reason: `${percent}% is ${threshold - percent} points below your ${threshold}% target.` }; }
 export const assessmentPercentage = (assessments: Assessment[]) => { const max = assessments.reduce((sum, item) => sum + item.max, 0); return max === 0 ? 0 : Math.round(assessments.reduce((sum, item) => sum + item.score, 0) / max * 1000) / 10; };
 export function markNeeded(currentScore: number, currentMax: number, futureMax: number, desiredPercent: number) { return Math.max(0, Math.min(futureMax, Math.ceil((desiredPercent / 100) * (currentMax + futureMax) - currentScore))); }
+export function markTarget(currentScore: number, currentMax: number, futureMax: number, desiredPercent: number) {
+  const rawNeeded = Math.max(0, Math.ceil((desiredPercent / 100) * (currentMax + futureMax) - currentScore));
+  return { needed: Math.min(futureMax, rawNeeded), achievable: rawNeeded <= futureMax, rawNeeded };
+}

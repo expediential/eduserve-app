@@ -2,14 +2,14 @@ import { mockStudentData } from '../data/mockStudentProvider';
 import { StudentData, StudentDataProvider } from '../domain/types';
 
 export type DataSource = 'eduserve' | 'kids' | 'university' | 'mock';
-export type DataKind = 'profile' | 'courses' | 'attendance' | 'marks' | 'timetable' | 'exams' | 'fees' | 'notifications' | 'assignments';
+export type DataKind = 'profile' | 'courses' | 'attendance' | 'marks' | 'timetable' | 'exams' | 'fees' | 'notifications' | 'assignments' | 'events';
 export type SourcePriority = Record<DataKind, readonly DataSource[]>;
 
 /** Replace these priorities only after authorized platform reconnaissance. */
 export const sourcePriority: SourcePriority = {
   profile: ['eduserve', 'kids', 'mock'], courses: ['kids', 'eduserve', 'mock'], attendance: ['eduserve', 'kids', 'mock'],
   marks: ['eduserve', 'kids', 'mock'], timetable: ['eduserve', 'kids', 'mock'], exams: ['eduserve', 'kids', 'mock'],
-  fees: ['eduserve', 'mock'], notifications: ['eduserve', 'kids', 'mock'], assignments: ['kids', 'eduserve', 'mock'],
+  fees: ['eduserve', 'mock'], notifications: ['eduserve', 'kids', 'mock'], assignments: ['kids', 'eduserve', 'mock'], events: ['university', 'kids', 'mock'],
 };
 
 export interface EduServeProvider extends StudentDataProvider { readonly source: 'eduserve' | 'mock'; }

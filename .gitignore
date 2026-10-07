@@ -2,6 +2,7 @@ node_modules/
 .tools/
 .expo/
 dist/
+dist-*/
 *.log
 .env
 .env.*
