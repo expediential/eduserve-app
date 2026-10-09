@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
 import { useAuth } from '@/src/services/authProvider';
 import { Screen } from '@/src/ui/components';
 import { useTheme } from '@/src/ui/theme';
@@ -12,7 +11,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('demo1234');
   const [error, setError] = useState<string>();
   const signIn = async () => {
-    try { setError(undefined); await signInDemo(email, password); router.replace('/'); }
+    try { setError(undefined); await signInDemo(email, password); }
     catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to sign in.'); }
   };
   return <Screen><ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">

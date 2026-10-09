@@ -4,6 +4,7 @@ node_modules/
 dist/
 dist-*/
 karunya-one-expo-app.zip
+build-*.apk
 *.log
 .env
 .env.*
